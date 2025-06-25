@@ -1,0 +1,13 @@
+# 기본 무시할 항목들
+_mysql_config/
+agent/
+crawling/
+log_api_v2/
+log_dashboard/
+send_job/
+
+log_api/.log_api/
+log_api/mysql_config/
+log_api/.env
+log_api/ex.ipynb
+log_api/lambda.py
