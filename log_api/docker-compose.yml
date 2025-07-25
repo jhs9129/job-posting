@@ -1,90 +1,49 @@
-# version: "3.8"
-
-# services:
-#   mysql:
-#     image: mysql:8.0
-#     container_name: mysql8-container
-#     restart: always
-#     env_file:
-#       - .env
-#     volumes:
-#       - mysql_data:/var/lib/mysql
-#       - ./mysql_config:/docker-entrypoint-initdb.d  # init.sql 실행
-#     ports:
-#       - "3306:3306"
-
-#   fastapi:
-#     build: .
-#     container_name: fastapi-log-api
-#     restart: always
-#     env_file:
-#       - .env
-#     depends_on:
-#       - mysql
-#     ports:
-#       - "8000:8000"
-
-#   nginx:
-#     image: nginx:latest
-#     container_name: fastapi-nginx
-#     restart: always
-#     volumes:
-#       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-#     depends_on:
-#       - fastapi
-#     ports:
-#       - "80:80"
-
-# volumes:
-#   mysql_data:
-
-
 version: "3.8"
 
 services:
   mysql:
-    image: mysql:8.0
-    container_name: mysql8-container
-    restart: always
+    image: mysql:8.0 # 공식 이미지 사용
+    container_name: mysql8-container 
+    restart: always # 재시작
     env_file:
       - .env
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql_config:/docker-entrypoint-initdb.d  # init.sql 실행
+      - mysql_data:/var/lib/mysql # 데이터 영속성을 위한 볼륨 설정
+      - ./mysql_config:/docker-entrypoint-initdb.d  # DB 초기화 스크립트
     ports:
-      - "3306:3306"
+      - "3306:3306" # 호스트:컨테이너 포트 매핑
     networks:
       - app-network
 
   fastapi:
-    build: .
+    build: . # 현재 디렉토리에 있는 Dockerfile을 사용하여 빌드함
     container_name: fastapi-log-api
-    restart: always
+    restart: always # 재시작
     env_file:
       - .env
     depends_on:
-      - mysql
+      - mysql # mysql 서비스가 먼저 시작되어야 함(의존성 설정)
     ports:
       - "8000:8000"
     networks:
       - app-network
 
   nginx:
-    image: nginx:latest
+    image: nginx:latest #최신 Nginx 공식 이미지 사용
     container_name: fastapi-nginx
-    restart: always
+    restart: always # 재시작
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # 커스텀 nginx 설정 파일 마운트
     depends_on:
-      - fastapi
+      - fastapi # fastapi 서비스가 먼저 시작되어야 함(의존성 설정)
     ports:
-      - "80:80"
+      - "80:80" # HTTP
     networks:
       - app-network
 
 volumes:
-  mysql_data:
+  mysql_data: # MySQL 데이터 저장용 볼륨
 
 networks:
   app-network:
-    driver: bridge
+    driver: bridge # 기본 브릿지 드라이버

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobDori 채용공고</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        * {{
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }}
+        
+        body {{
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffd93d 100%);
+        }}
+        
+        .job-item:hover {{
+            background: linear-gradient(135deg, #fff3c4 0%, #ffd93d 30%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 171, 0, 0.3);
+        }}
+        
+        .survey-button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 171, 0, 0.4);
+        }}
+    </style>
+</head>
+<body>
+            <div style="max-width: 640px; margin: 0 auto; background: linear-gradient(135deg, #fff8e1 0%, #ffd93d 100%); border-radius: 20px; padding: 10px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>
+                        <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(255, 171, 0, 0.1);">
+                            <tr>
+                                <td style="text-align: left; width: 50%;">
+                                    <a href="https://www.naver.com" target="_blank">
+                                        <img width="250" src="https://raw.githubusercontent.com/jhs9129/job-posting/04a4d19997fccd5f67f648becfbdb70e78eae5ad/image/%EA%B2%80%EC%9D%80%EC%9E%A1%EB%8F%84%EB%A6%AC.png" alt="잡도리 로고" style="border-radius: 10px; filter: drop-shadow(0 3px 6px rgba(255, 171, 0, 0.3));" />
+                                    </a>
+                                </td>
+                                <td style="text-align: right; width: 50%;">
+                                    <span style="font-size: 13px; color: white; font-weight: 600; background: linear-gradient(135deg, #ffd93d, #ffab00); padding: 8px 16px; border-radius: 20px;">{0}</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; background: rgba(255, 255, 255, 0.95); border-radius: 15px; margin-top: 15px; padding-bottom: 20px; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.15); backdrop-filter: blur(10px);">
+                            <thead>
+                                <tr>
+                                    <td style="padding: 30px 20px 20px; text-align: center;">
+                                        <h5 style="margin: 0 0 15px 0; padding: 0; font-size: 24px; font-weight: 700; color: #2d3748;"><span>{1}</span>님의 맞춤 채용공고 🎯</h5>
+                                        <p style="margin: 0; padding: 0; font-size: 16px; color: #ff8f00; font-weight: 500;">오늘 <span style="background: linear-gradient(135deg, #ffd93d, #ffab00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">{2}</span>건의 새로운 기회를 발견했어요! ✨</p>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              <!-- 채용공고 -->
+                              {3}
+                              <!-- 채용공고 끝 -->
+                              <!-- 설문 링크 -->
+                                <tr>
+                                  <td style="padding: 0 20px;">
+                                      <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; background: white; border-radius: 15px; margin-top: 20px; padding-bottom: 25px; box-shadow: 0 5px 15px rgba(255, 171, 0, 0.1);">
+                                          <thead>
+                                              <tr>
+                                                  <td style="padding: 10px; text-align: center;">
+                                                      <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #ffd93d 0%, #ffab00 100%); border-radius: 12px;">
+                                                          <tr>
+                                                              <td style="text-align: center;">
+                                                                  <h6 style="margin: 0; padding: 12px; font-size: 16px; color: white; font-weight: 600;">JobDori </h6>
+                                                              </td>
+                                                          </tr>
+                                                      </table>
+                                                  </td>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              <tr>
+                                                  <td style="padding: 10px 25px 0;">
+                                                      <a href="https://www.chunjae.co.kr" rel="noreferrer noopener" style="text-decoration: none;" target="_blank">
+                                                          <table border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+                                                              <!-- <tr>
+                                                                  <p style="margin: 0; padding: 0; color: #4a5568; text-align: center; line-height: 1.6; font-size: 14px;">더 나은 서비스를 위해 설문에 참여해 주시면 감사하겠습니다.</p>
+                                                                  <p style="margin: 0; padding: 0; color: #4a5568; text-align: center; line-height: 1.6; font-size: 14px;">여러분의 소중한 의견을 기다리고 있어요! 😊</p>
+                                                              </tr>
+                                                              <tr>
+                                                                  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdsVGRfdd7cAjzATIUeQ5zBpAmQWMTkBntxjjw2RWyRTTaN-A/viewform?usp=send_form" style="text-decoration: none; display: block; margin-top: 15px; width: 100%; text-align: center;">
+                                                                      <button style="border: none; background: linear-gradient(135deg, #ffd93d 0%, #ffab00 100%); cursor: pointer; padding: 12px 30px; border-radius: 25px; color: white; font-size: 16px; font-weight: 600; display: block; margin: 0 auto; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(255, 171, 0, 0.3);">
+                                                                          설문 참여하기 📝
+                                                                      </button>
+                                                                  </a>
+                                                              </tr> -->
+                                                                  <tr>
+                                                                      <div style='font-family: Noto Sans KR, sans-serif; color: #9ca3af; text-decoration: underline; font-size: 12px; text-align: center;'>
+                                                                          <br>
+                                                                          <br>
+                                                                          <a href="https://forms.gle/C785dS1va78w6PMH7" style="color: #9ca3af;">수신 거부</a>
+                                                                      </div>
+                                                                  </tr>
+                                                          </table>
+                                                      </a>                                                       
+                                                  </td>
+                                              </tr>
+                                          </tbody>
+                                      </table>
+                                  </td>
+                              </tr>
+                              <!-- 설문태그 끝 -->
+
+                          </tbody>
+                      </table>
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+  </div>
+</body>
+</html>

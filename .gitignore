@@ -5,7 +5,7 @@ crawling/
 log_api_v2/
 log_dashboard/
 send_job/
-gcp_send_job/
+
 
 # log_api 관련 파일 무시
 log_api/.log_api/
@@ -20,3 +20,11 @@ aws_send_job/.env
 aws_send_job/ex.ipynb
 aws_send_job/ex.xlsx
 aws_send_job/jhs_send_mail.py
+
+# gcp_send_job 관련 파일 무시
+gcp_send_job/GOOGLE_API/
+gcp_send_job/.env
+gcp_send_job/ex.ipynb
+gcp_send_job/ex.xlsx
+gcp_send_job/jhs_send_mail.py
+gcp_send_job/test.ipynb
