@@ -27,12 +27,9 @@ import gspread
 import urllib.parse
 from google.oauth2.service_account import Credentials
 
-#brevo api
-from sib_api_v3_sdk.rest import ApiException
-import sib_api_v3_sdk
-from sib_api_v3_sdk.configuration import Configuration
-from sib_api_v3_sdk.api.transactional_emails_api import TransactionalEmailsApi
-from sib_api_v3_sdk.models import *
+# sendgrid 메일
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 from _call_ import * 
 
@@ -55,12 +52,6 @@ html_job_tr = read_html_file('./HTML_CODE/jobdori_job_tr.html')
 api_gateway_url = "http://35.216.93.183/log"
 
 site_name_kr = {'saramin': '사람인','wanted': '원티드','jumpit': '점핏','incruit': '인크루트'}
-
-# brevo api 설정
-configuration = Configuration()
-configuration.api_key['api-key'] = os.getenv("brevo_api_key")
-api_instance = TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-
 
 # Data Analyst
 # Data Engineer
@@ -147,7 +138,7 @@ def keyword_query(course, job_sites):
 
     df_date['deadline'] = pd.to_datetime(df_date['deadline']).dt.strftime('%Y-%m-%d')
 
-    df_date_sorted = df_date.sort_values(by='deadline', ascending=True)
+    df_date_sorted = df_date.sort_values(by='deadline', ascending=False)
 
     df = pd.concat([df_date_sorted, df_nondate], ignore_index=True)
     ###############################################################
@@ -237,40 +228,36 @@ def job_check(df):
 
     return bad_df, good_df
 
-# Brevo send mail
-def brevo_send_mail(sender_email, recipient_email, subject, html_body):
-    send_smtp_email = SendSmtpEmail(
-        to=[{"email": recipient_email}],
-        sender={"email": sender_email, "name": "JobDori"},
-        subject=subject,
-        html_content=html_body
+# sendgrid 메일 발송 코드
+def sg_mail(sender_email, recipient_email, subject, html_body):
+    sg_api = os.getenv('SENDGRID_API_KEY')
+    
+    message = Mail(
+        from_email=f'Jobdori <{sender_email}>',  # SendGrid에 등록한 이메일
+        to_emails = recipient_email,                 # 아무 이메일 주소
+        subject = subject,
+        html_content = html_body
     )
     try:
-        response = api_instance.send_transac_email(send_smtp_email)
-        print("✅ 전송 성공:", response)
-    except ApiException as e:
+        sg = SendGridAPIClient(sg_api)
+        response = sg.send(message)
+        print(f"✔️ Status Code: {response.status_code}")
+    except Exception as e:
         print("❌ 오류 발생:", e)
 
 # 메일 보내는 함수를 사용 / 교육생에게 보냄
 def send_mail(name, email, course, very_good_df, job_sites):
-    nomal_tr = "" 
-    job_tr = ""
+    site_tr = "" 
     total_job_postings = 0
-
-    # 보내는 공고 모음집(db에 적재하려고)
-    sent_df = pd.DataFrame(columns=very_good_df.columns)
     for site in job_sites:
-        # kr_name = site_name_kr.get(site)
+        job_tr = ""
+        kr_name = site_name_kr.get(site)
         
-        # 사람인으로 못채운 갯수 채우려고 사람인은 다 가져옴(총 10개)
-        if site =='saramin':
-            df_ = very_good_df[very_good_df['source_table'] == site].head(10-total_job_postings)
-        else:
-            df_ = very_good_df[very_good_df['source_table'] == site].head(5)
+        df_ = very_good_df[very_good_df['source_table'] == site].head(3)
 
-        # # 채용공고가 없는 사이트 제외
-        # if df_.empty:
-        #     continue
+        # 채용공고가 없는 사이트 제외
+        if df_.empty:
+            continue
 
         for idx, row in df_.iterrows():
             open_source = 'email'
@@ -278,24 +265,19 @@ def send_mail(name, email, course, very_good_df, job_sites):
             deadline = row['deadline']
             title = row['job_title']
             job_url = row['recruit_url']
-            open_source = 'mail'
             # 공고 정리
             encoded_url = urllib.parse.quote(job_url, safe='/')
             job_url = f"{api_gateway_url}?user_email={email}&user_id={name}&clicked_url={encoded_url}&course_id={course}&open_source={open_source}"
             # 각 채용공고 별 html 모으기
             job_tr += html_job_tr.format(job_url,company,deadline,title)
             total_job_postings += 1
-
-        # 보내는 공고 누적
-        sent_df = pd.concat([sent_df, df_])
-
         # 채용공고 사이트 별 table html
-    nomal_tr += html_site_tr.format('🔎 채용 중인 과정 추천 공고', job_tr)
+        site_tr += html_site_tr.format(kr_name, job_tr)
     
     today = datetime.today().strftime("%Y-%m-%d")
     
     # 최종 html
-    html_res = html_header_tr.format(today, name, total_job_postings, nomal_tr)
+    html_res = html_header_tr.format(today, name, total_job_postings, site_tr)
 
     sender_email = 'jshyjh9129@gmail.com'
     
@@ -304,7 +286,7 @@ def send_mail(name, email, course, very_good_df, job_sites):
     subject = f'📌 [JobDori 채용공고] {name}님! 이번주 {course} 채용공고는?'
 
 
-    brevo_send_mail(sender_email, recipient_email, subject, html_res) 
+    sg_mail(sender_email, recipient_email, subject, html_res) 
 
 def save_send_job(final_df):
     db_user = os.getenv("Job_db_user")
@@ -328,7 +310,7 @@ def main(df_students):
 
     courses = ['Data Analyst', 'Data Engineer', 'Data Scientist and AI', 'FULLSTACK', 'SERVICE' ,'CONTENT']
     # job_sites = ['saramin', 'wanted', 'jumpit', 'incruit']
-    job_sites = ['jumpit', 'saramin']
+    job_sites = ['saramin','jumpit']
     for course in courses:
         # 쿼리문으로 채용공고 데이터 가져오기
         good = keyword_query(course,job_sites)
@@ -397,7 +379,7 @@ gc = gspread.authorize(creds)
 
 # Google Sheets 문서 ID 및 시트 이름
 SPREADSHEET_ID = '1hQScinjsOf7uRk56LmE_IBK47TdaWek6bYplThLgXRs'
-SHEET_NAME = 'admin_test'  # 실제 시트 이름 (예: 'Sheet1', '시트1', '데이터' 등)
+SHEET_NAME = '설문지 응답 시트1'  # 실제 시트 이름 (예: 'Sheet1', '시트1', '데이터' 등)
 
 # 시트 열기
 sh = gc.open_by_key(SPREADSHEET_ID)

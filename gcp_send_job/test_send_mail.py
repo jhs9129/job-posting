@@ -146,7 +146,7 @@ def keyword_query(course, job_sites):
 
     df_date['deadline'] = pd.to_datetime(df_date['deadline']).dt.strftime('%Y-%m-%d')
 
-    df_date_sorted = df_date.sort_values(by='deadline', ascending=False)
+    df_date_sorted = df_date.sort_values(by='deadline', ascending=True)
 
     df = pd.concat([df_date_sorted, df_nondate], ignore_index=True)
     ###############################################################
@@ -183,7 +183,7 @@ def job_check(df):
                 source_counts[s] += 1
 
         # 만약 현재 사이트의 공고가 이미 10개면 건너뜀
-        if source_counts.get(source, 0) >= 3:
+        if source_counts.get(source, 0) >= 10:
             print(f"[PASS]-- [{source}] 10개 초과, 건너뜀: {row['company_name']} - {row['job_title']}")
             continue
 
@@ -225,8 +225,8 @@ def job_check(df):
 
         print(f"[GOOD] {source_counts}")
 
-        # 각 사이트 3개 이상이면 끝 
-        if all(count >= 3 for count in source_counts.values()):
+        # 각 사이트 5개 이상이면 끝 
+        if all(count >= 5 for count in source_counts.values()):
             print("[✅] 사이트별로 3개씩 수집 완료. 중단합니다.")
             break
 
@@ -251,18 +251,57 @@ def brevo_send_mail(sender_email, recipient_email, subject, html_body):
         print("❌ 오류 발생:", e)
 
 # 메일 보내는 함수를 사용 / 교육생에게 보냄
-def send_mail(name, email, course, very_good_df, job_sites):
-    site_tr = "" 
-    total_job_postings = 0
-    for site in job_sites:
-        job_tr = ""
-        kr_name = site_name_kr.get(site)
+# def send_mail(name, email, course, very_good_df, job_sites):
+#     site_tr = "" 
+#     total_job_postings = 0
+#     for site in job_sites:
+#         job_tr = ""
+#         kr_name = site_name_kr.get(site)
         
-        df_ = very_good_df[very_good_df['source_table'] == site].head(3)
+#         df_ = very_good_df[very_good_df['source_table'] == site].head(3)
 
-        # 채용공고가 없는 사이트 제외
-        if df_.empty:
-            continue
+#         # 채용공고가 없는 사이트 제외
+#         if df_.empty:
+#             continue
+
+#         for idx, row in df_.iterrows():
+#             open_source = 'email'
+#             company = row['company_name']
+#             deadline = row['deadline']
+#             title = row['job_title']
+#             job_url = row['recruit_url']
+#             # 공고 정리
+#             encoded_url = urllib.parse.quote(job_url, safe='/')
+#             job_url = f"{api_gateway_url}?user_email={email}&user_id={name}&clicked_url={encoded_url}&course_id={course}&open_source={open_source}"
+#             # 각 채용공고 별 html 모으기
+#             job_tr += html_job_tr.format(job_url,company,deadline,title)
+#             total_job_postings += 1
+#         # 채용공고 사이트 별 table html
+#         site_tr += html_site_tr.format(kr_name, job_tr)
+    
+#     today = datetime.today().strftime("%Y-%m-%d")
+    
+#     # 최종 html
+#     html_res = html_header_tr.format(today, name, total_job_postings, site_tr)
+def send_mail(name, email, course, very_good_df, job_sites):
+    nomal_tr = "" 
+    job_tr = ""
+    total_job_postings = 0
+
+    # 보내는 공고 모음집(db에 적재하려고)
+    sent_df = pd.DataFrame(columns=very_good_df.columns)
+    for site in job_sites:
+        # kr_name = site_name_kr.get(site)
+        
+        # 사람인으로 못채운 갯수 채우려고 사람인은 다 가져옴(총 10개)
+        if site =='saramin':
+            df_ = very_good_df[very_good_df['source_table'] == site].head(10-total_job_postings)
+        else:
+            df_ = very_good_df[very_good_df['source_table'] == site].head(5)
+
+        # # 채용공고가 없는 사이트 제외
+        # if df_.empty:
+        #     continue
 
         for idx, row in df_.iterrows():
             open_source = 'email'
@@ -270,19 +309,24 @@ def send_mail(name, email, course, very_good_df, job_sites):
             deadline = row['deadline']
             title = row['job_title']
             job_url = row['recruit_url']
+            open_source = 'mail'
             # 공고 정리
             encoded_url = urllib.parse.quote(job_url, safe='/')
             job_url = f"{api_gateway_url}?user_email={email}&user_id={name}&clicked_url={encoded_url}&course_id={course}&open_source={open_source}"
             # 각 채용공고 별 html 모으기
             job_tr += html_job_tr.format(job_url,company,deadline,title)
             total_job_postings += 1
+
+        # 보내는 공고 누적
+        sent_df = pd.concat([sent_df, df_])
+
         # 채용공고 사이트 별 table html
-        site_tr += html_site_tr.format(kr_name, job_tr)
+    nomal_tr += html_site_tr.format('🔎 채용 중인 과정 추천 공고', job_tr)
     
     today = datetime.today().strftime("%Y-%m-%d")
     
     # 최종 html
-    html_res = html_header_tr.format(today, name, total_job_postings, site_tr)
+    html_res = html_header_tr.format(today, name, total_job_postings, nomal_tr)
 
     sender_email = 'jshyjh9129@gmail.com'
     
@@ -315,7 +359,8 @@ def main(df_students):
 
     courses = ['Data Analyst', 'Data Engineer', 'Data Scientist and AI', 'FULLSTACK', 'SERVICE' ,'CONTENT']
     # job_sites = ['saramin', 'wanted', 'jumpit', 'incruit']
-    job_sites = ['saramin','jumpit']
+    # 사람인이 무조건 마지막이여야댐(공고가 제일 많아서 사람인에서 모자른 공고 가져옴)
+    job_sites = ['jumpit', 'saramin']
     for course in courses:
         # 쿼리문으로 채용공고 데이터 가져오기
         good = keyword_query(course,job_sites)
